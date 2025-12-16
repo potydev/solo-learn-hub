@@ -1,84 +1,34 @@
 import { motion } from "framer-motion";
 import CourseCard from "./CourseCard";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const courses = [
-  {
-    title: "Python",
-    icon: "🐍",
-    color: "#3776AB",
-    learners: "12.5M",
-    lessons: 96,
-    rating: 4.9,
-    level: "Beginner",
-  },
-  {
-    title: "JavaScript",
-    icon: "⚡",
-    color: "#F7DF1E",
-    learners: "10.2M",
-    lessons: 112,
-    rating: 4.8,
-    level: "Beginner",
-  },
-  {
-    title: "HTML & CSS",
-    icon: "🎨",
-    color: "#E34F26",
-    learners: "15.1M",
-    lessons: 78,
-    rating: 4.9,
-    level: "Beginner",
-  },
-  {
-    title: "React",
-    icon: "⚛️",
-    color: "#61DAFB",
-    learners: "4.8M",
-    lessons: 64,
-    rating: 4.7,
-    level: "Intermediate",
-  },
-  {
-    title: "Java",
-    icon: "☕",
-    color: "#007396",
-    learners: "8.3M",
-    lessons: 88,
-    rating: 4.8,
-    level: "Beginner",
-  },
-  {
-    title: "C++",
-    icon: "🔷",
-    color: "#00599C",
-    learners: "6.1M",
-    lessons: 94,
-    rating: 4.7,
-    level: "Intermediate",
-  },
-  {
-    title: "SQL",
-    icon: "🗃️",
-    color: "#336791",
-    learners: "5.2M",
-    lessons: 52,
-    rating: 4.8,
-    level: "Beginner",
-  },
-  {
-    title: "Swift",
-    icon: "🍎",
-    color: "#FA7343",
-    learners: "2.9M",
-    lessons: 68,
-    rating: 4.6,
-    level: "Intermediate",
-  },
-];
+interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  level: string | null;
+  lessons_count: number | null;
+}
 
 const CoursesSection = () => {
+  const { data: courses, isLoading } = useQuery({
+    queryKey: ["courses"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("*")
+        .order("title");
+      if (error) throw error;
+      return data as Course[];
+    },
+  });
+
   return (
     <section id="courses" className="py-24 relative">
       <div className="container mx-auto px-4">
@@ -97,11 +47,27 @@ const CoursesSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {courses.map((course, index) => (
-            <CourseCard key={course.title} {...course} index={index} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {courses?.map((course, index) => (
+              <CourseCard
+                key={course.id}
+                title={course.title}
+                icon={course.icon || "📚"}
+                color={course.color || "#6366f1"}
+                learners="1M+"
+                lessons={course.lessons_count || 0}
+                rating={4.8}
+                level={course.level || "Beginner"}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}

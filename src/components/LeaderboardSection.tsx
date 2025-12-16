@@ -1,13 +1,17 @@
 import { motion } from "framer-motion";
-import { Trophy, Flame, Medal, Crown } from "lucide-react";
+import { Trophy, Flame, Medal, Crown, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const topLearners = [
-  { rank: 1, name: "Sarah Chen", xp: 125840, streak: 365, avatar: "👩‍💻" },
-  { rank: 2, name: "Alex Kumar", xp: 118320, streak: 280, avatar: "👨‍💻" },
-  { rank: 3, name: "Maya Rodriguez", xp: 112450, streak: 245, avatar: "👩‍🔬" },
-  { rank: 4, name: "James Wilson", xp: 98670, streak: 189, avatar: "🧑‍💻" },
-  { rank: 5, name: "Emma Thompson", xp: 94320, streak: 156, avatar: "👩‍🎓" },
-];
+interface Profile {
+  id: string;
+  username: string | null;
+  xp: number | null;
+  streak: number | null;
+  avatar_url: string | null;
+}
+
+const avatars = ["👩‍💻", "👨‍💻", "👩‍🔬", "🧑‍💻", "👩‍🎓", "🧑‍🔬", "👨‍🎓", "👩‍💼"];
 
 const getRankIcon = (rank: number) => {
   switch (rank) {
@@ -23,6 +27,30 @@ const getRankIcon = (rank: number) => {
 };
 
 const LeaderboardSection = () => {
+  const { data: topLearners, isLoading } = useQuery({
+    queryKey: ["leaderboard"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("xp", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data as Profile[];
+    },
+  });
+
+  // Fallback data if no users yet
+  const fallbackLearners = [
+    { id: "1", username: "Sarah Chen", xp: 125840, streak: 365 },
+    { id: "2", username: "Alex Kumar", xp: 118320, streak: 280 },
+    { id: "3", username: "Maya Rodriguez", xp: 112450, streak: 245 },
+    { id: "4", username: "James Wilson", xp: 98670, streak: 189 },
+    { id: "5", username: "Emma Thompson", xp: 94320, streak: 156 },
+  ];
+
+  const displayLearners = topLearners?.length ? topLearners : fallbackLearners;
+
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
@@ -44,35 +72,41 @@ const LeaderboardSection = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {topLearners.map((learner, index) => (
-                  <motion.div
-                    key={learner.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/50 transition-colors"
-                  >
-                    <div className="w-8 flex justify-center">
-                      {getRankIcon(learner.rank)}
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xl">
-                      {learner.avatar}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{learner.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {learner.xp.toLocaleString()} XP
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 text-orange">
-                      <Flame className="h-4 w-4" />
-                      <span className="text-sm font-medium">{learner.streak}</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {displayLearners.map((learner, index) => (
+                    <motion.div
+                      key={learner.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/50 transition-colors"
+                    >
+                      <div className="w-8 flex justify-center">
+                        {getRankIcon(index + 1)}
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xl">
+                        {avatars[index % avatars.length]}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{learner.username || "Anonymous"}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(learner.xp || 0).toLocaleString()} XP
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-orange">
+                        <Flame className="h-4 w-4" />
+                        <span className="text-sm font-medium">{learner.streak || 0}</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
 

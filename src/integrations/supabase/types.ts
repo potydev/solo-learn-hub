@@ -14,7 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          xp_required: number | null
+        }
+        Insert: {
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          xp_required?: number | null
+        }
+        Update: {
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          xp_required?: number | null
+        }
+        Relationships: []
+      }
+      courses: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          lessons_count: number | null
+          level: string | null
+          slug: string
+          title: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          lessons_count?: number | null
+          level?: string | null
+          slug: string
+          title: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          lessons_count?: number | null
+          level?: string | null
+          slug?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      lessons: {
+        Row: {
+          content: string | null
+          course_id: string | null
+          created_at: string | null
+          id: string
+          order_index: number | null
+          title: string
+          xp_reward: number | null
+        }
+        Insert: {
+          content?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          order_index?: number | null
+          title: string
+          xp_reward?: number | null
+        }
+        Update: {
+          content?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          order_index?: number | null
+          title?: string
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          last_activity_date: string | null
+          streak: number | null
+          updated_at: string | null
+          username: string | null
+          xp: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id: string
+          last_activity_date?: string | null
+          streak?: number | null
+          updated_at?: string | null
+          username?: string | null
+          xp?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          last_activity_date?: string | null
+          streak?: number | null
+          updated_at?: string | null
+          username?: string | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string | null
+          earned_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          achievement_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          achievement_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          course_id: string | null
+          id: string
+          lesson_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_id?: string | null
+          id?: string
+          lesson_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_id?: string | null
+          id?: string
+          lesson_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
